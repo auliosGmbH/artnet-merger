@@ -1,7 +1,7 @@
 import socket
 import numpy as np
 import time
-from src.convert_artnet import ArtnetData
+from src.artnet_data_class import ArtnetData
 import queue
 
 class ArtNetReciver:

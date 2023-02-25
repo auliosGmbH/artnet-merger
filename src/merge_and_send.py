@@ -1,4 +1,4 @@
-from src.convert_artnet import ArtnetData
+from src.artnet_data_class import ArtnetData
 from src.clock import Clock
 from src.settings import Settings, MergeSettings, MergeMethod
 from src.artnet_sender import ArtNetSender

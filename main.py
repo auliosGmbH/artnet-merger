@@ -1,6 +1,5 @@
 from src.artnet_reciver import ArtNetReciver
-from src.convert_artnet import ArtnetData
-from src.incomming_universes import MergeAndSend
+from src.merge_and_send import MergeAndSend
 import argparse
 from src.settings import Settings, MergeSettings,MergeMethod
 import queue
