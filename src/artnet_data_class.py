@@ -11,7 +11,7 @@ class ArtnetData:
         self.sequence : int = raw_data[12]
         self.physical : int = raw_data[13]
 
-        self.length: int = raw_data[16] * 256 + raw_data[17]
+        self.length: int = raw_data[16] * 256 + raw_data[17] # TODO check right conversion for length 
 
         self.data : bytes =  raw_data[18:]
         self.time = time.perf_counter()

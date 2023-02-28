@@ -42,6 +42,8 @@ class MergeAndSend:
 
                 elif merge_settings.method == MergeMethod.PRIO:
                     res = self.__merge_prio(merge_settings)
+                elif merge_settings.method == MergeMethod.RANGE:
+                    res = self.__merge_range(merge_settings)
                 
                 self.sender[idx].send_data(res)
 
@@ -52,6 +54,13 @@ class MergeAndSend:
 
     def __merge_prio(self, merge_settings: MergeSettings):
         return self.universes[merge_settings.prio].data
+
+    def __merge_range(self, merge_settings: MergeSettings):
+        res = np.zeros(512)
+        for range in merge_settings.range:
+            if range.from_universe in self.universes:
+                res[range.min:range.max] = self.universes[range.from_universe].data[range.min:range.max]
+        return res
 
     def __merge_htp(self, merge_settings: MergeSettings):
         res = []

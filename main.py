@@ -3,7 +3,7 @@ from src.merge_and_send import MergeAndSend
 import argparse
 from src.settings import Settings, MergeSettings,MergeMethod
 import queue
-
+from zeroconf import ServiceBrowser, Zeroconf
 import threading
 
 from src.mdns_listener import MdnsListener
@@ -24,7 +24,9 @@ if __name__ == "__main__":
 
     # settings 
     settings = Settings("169.254.216.70")
-    settings.merge_settings.append(MergeSettings([0,1],1,MergeMethod.HTP))
+    settings.merge_settings.append(MergeSettings([0,1],1,MergeMethod.RANGE))
+
+    settings.range = [(0,0,500),(1,0,512)]
 
     # start mdns listener
     mdns_listener = start_mdns_listener()
