@@ -6,9 +6,18 @@ import queue
 
 import threading
 
+from src.mdns_listener import MdnsListener
+
 def start_artnet_reciver(incomming_data_queue: queue.Queue):
     recv = ArtNetReciver()
     recv.start_recive(incomming_data_queue)
+
+def start_mdns_listener() -> MdnsListener:
+    zeroconf = Zeroconf()
+    listener = MdnsListener()
+    browser = ServiceBrowser(zeroconf, "_http._tcp.local.", listener)
+
+    return listener
 
 
 if __name__ == "__main__":
@@ -16,6 +25,9 @@ if __name__ == "__main__":
     # settings 
     settings = Settings("169.254.216.70")
     settings.merge_settings.append(MergeSettings([0,1],1,MergeMethod.HTP))
+
+    # start mdns listener
+    mdns_listener = start_mdns_listener()
 
     incomming_data_queue = queue.Queue()
 
@@ -27,5 +39,4 @@ if __name__ == "__main__":
     merge_and_send.start_merge_universes(incomming_data_queue)
 
 
-#TODO: search for artnet recivers -> use mdns listener
 #TODO: broadcast signal, that you are artnet reciver
