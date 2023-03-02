@@ -1,0 +1,32 @@
+{
+  "reciver_ip": "169.254.216.70",
+  "FPS": 44,
+  "merge_settings": [
+    {
+      "from_universe": [
+        0,
+        1
+      ],
+      "to_universe": 1,
+      "method": "RANGE",
+      "send_broadcast": false,
+      "range": [
+        {
+          "from_universe": 0,
+          "min": 0,
+          "max": 500,
+          "__class__": "UniverseRange"
+        },
+        {
+          "from_universe": 1,
+          "min": 0,
+          "max": 512,
+          "__class__": "UniverseRange"
+        }
+      ],
+      "prio": null,
+      "__class__": "MergeSettings"
+    }
+  ],
+  "__class__": "Settings"
+}
