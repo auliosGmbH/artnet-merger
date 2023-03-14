@@ -1,7 +1,7 @@
-from src.artnet_data_class import ArtnetData
+from src.artnet.artnet_data_class import RecivedArtNetData
 from src.clock import Clock
 from src.settings import Settings, MergeSettings, MergeMethod
-from src.artnet_sender import ArtNetSender
+from src.artnet.artnet_sender import ArtNetSender
 import queue
 import numpy as np
 

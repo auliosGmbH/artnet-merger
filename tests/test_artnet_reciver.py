@@ -1,4 +1,4 @@
-from src.artnet_reciver import ArtNetReciver
+from src.artnet.artnet_reciver import ArtNetReciver
 
 
 def test_get_local_ip():

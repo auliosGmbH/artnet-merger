@@ -1,5 +1,5 @@
 {
-  "reciver_ip": "169.254.216.70",
+  "reciver_ip": "10.0.3.127",
   "FPS": 44,
   "merge_settings": [
     {
@@ -8,7 +8,7 @@
         1
       ],
       "to_universe": 1,
-      "method": "RANGE",
+      "method": "HTP",
       "send_broadcast": false,
       "range": [
         {
@@ -19,7 +19,7 @@
         },
         {
           "from_universe": 1,
-          "min": 0,
+          "min": 501,
           "max": 512,
           "__class__": "UniverseRange"
         }

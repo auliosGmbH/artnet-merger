@@ -5,8 +5,11 @@ Device Controller class for controlling the unity simulator over art net
 import socket
 import numpy as np
 from src.clock import Clock
+from src.artnet.artnet_data_class import OpCode
 
 ARTNET_FPS = 44
+
+ARTNET_STRING = b'Art-Net\x00'
 
 
 class ArtNetSender():
@@ -17,12 +20,13 @@ class ArtNetSender():
         universe_id: int = 0,
         broadcast: bool = False,
         input_socket=None,
-        fps: int = 0
+        fps: int = 0,
+        op_code: OpCode = OpCode.OpDmx,
     ):
         self.__ip_address = ip_address
         self.__port = port
         self.__broadcast = broadcast
-
+        self.op_code = op_code
 
         if input_socket is None:
             self.__socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -33,6 +37,8 @@ class ArtNetSender():
 
         self.__header = bytearray()
         self.__init_header(universe_id)
+
+
         if fps > 0:        
             self.__clock = Clock(fps)
         else:
@@ -61,11 +67,37 @@ class ArtNetSender():
         return f"ArtNetSender(ip_address={self.__ip_address}, port={self.__port}, broadcast={self.__broadcast})"
 
     def __init_header(self, universe_id: int):
-        self.__header.extend(bytearray("Art-Net", "utf8"))
-        self.__header.extend([0x0, 0x00, 0x50, 0x0, 14, 0, 0x00])
+        self.__header.extend(ARTNET_STRING)
 
-        self.__header.extend(self.__extract_mbs_and_lsb(universe_id)[::-1])
-        self.__header.extend(self.__extract_mbs_and_lsb(512))
+        self.__header.append(self.op_code.value & 0xff)  # low byte of opcode
+        self.__header.append(self.op_code.value >> 8)  # high byte of opcode
+
+        if self.op_code == OpCode.OpDmx:
+            self.__header.extend([0x00, 0x50])
+            self.__header.extend([0x0, 0x00, 0x50, 0x0, 14, 0, 0x00])
+            self.__header.extend(self.__extract_mbs_and_lsb(universe_id)[::-1])
+            self.__header.extend(self.__extract_mbs_and_lsb(512))       
+
+
+        if self.op_code == OpCode.OpPoll:
+            self.__header.extend(self.__get_version())
+            flags = 0b00000010
+            self.__header.extend([flags, 0x0])
+
+
+    def bitsToBytes(self,a):
+        s = i = 0
+        for x in a:
+            s += s + x
+            i += 1
+            if i == 8:
+                yield s
+                s = i = 0
+        if i > 0:
+            yield s << (8 - i)
+                 
+    def __get_version(self):
+        return [0x0, 14]
 
     def __extract_mbs_and_lsb(self, number):
         low = number & 0xFF
@@ -101,3 +133,11 @@ class ArtNetSender():
         self.__socket.sendto(packet, (self.__ip_address, self.__port))
         if self.__clock:
             self.__clock.sleep()
+
+    def send_poll(self):
+
+        assert self.op_code == OpCode.OpPoll, "OpCode is not OpPoll"
+        assert self.__broadcast, "Broadcast is not set to True"
+
+        self.__socket.sendto(self.__header, (self.ip_address, self.__port))
+        print("sent poll")

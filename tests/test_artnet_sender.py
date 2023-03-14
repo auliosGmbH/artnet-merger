@@ -1,6 +1,6 @@
 import random
 import numpy as np
-from src.artnet_sender import ArtNetSender
+from src.artnet.artnet_sender import ArtNetSender
 
 
 class MockSocket:

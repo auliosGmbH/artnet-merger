@@ -1,7 +1,7 @@
 import socket
 import numpy as np
 import time
-from src.artnet_data_class import ArtnetData
+from src.artnet.artnet_data_class import RecivedArtNetData, OpCode
 import queue
 
 class ArtNetReciver:
@@ -13,7 +13,10 @@ class ArtNetReciver:
         print("ArtNetReciver started on: ", self.get_local_ip(), ":", self.__port)
 
     def get_local_ip(self) -> str:
-        return socket.gethostbyname(socket.gethostname())
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except:
+            return socket.gethostbyname("")
 
     def get_local_hostname(self) -> str:
         return socket.gethostname()
@@ -31,11 +34,24 @@ class ArtNetReciver:
 
         while True:
             data, addr = self.recv_socket.recvfrom(2048)
+            print(data)
 
+            artnet_data  = RecivedArtNetData(data,addr)
             try:
-                artnetData  = ArtnetData(data,addr)
-                artnet_queue.put(artnetData)
+                if artnet_data.op_code_name == OpCode.OpDmx:
+                    artnet_queue.put(artnet_data)
+                    print("Recived Dmx")
+                if artnet_data.op_code_name == OpCode.OpPoll:
+                    #TODO -> send reply
+                    print("Recived Poll")
+                if artnet_data.op_code_name == OpCode.OpPollReply:
+                    #TODO -> use reply
+                    print("Recived PollReply")
+                else:
+                    print(artnet_data.op_code_name)
+                
             except:
+                #print(data)
                 print("Error while parsing artnet data")
                 pass
 
