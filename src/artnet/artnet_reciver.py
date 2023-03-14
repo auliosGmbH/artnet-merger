@@ -34,20 +34,25 @@ class ArtNetReciver:
 
         while True:
             data, addr = self.recv_socket.recvfrom(2048)
-            print(data)
+            # TODO -> check addr host addr 
+
 
             artnet_data  = RecivedArtNetData(data,addr)
             try:
                 if artnet_data.op_code_name == OpCode.OpDmx:
                     artnet_queue.put(artnet_data)
-                    print("Recived Dmx")
-                if artnet_data.op_code_name == OpCode.OpPoll:
+                elif artnet_data.op_code_name == OpCode.OpPoll:
                     #TODO -> send reply
                     print("Recived Poll")
-                if artnet_data.op_code_name == OpCode.OpPollReply:
+                    print(artnet_data.flags)
+                    print(artnet_data.priority)
+                    print(data)
+                elif artnet_data.op_code_name == OpCode.OpPollReply:
                     #TODO -> use reply
                     print("Recived PollReply")
+                    print(data)
                 else:
+                    #TODO -> handle OpCode.OpTodRequest aka RDM
                     print(artnet_data.op_code_name)
                 
             except:

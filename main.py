@@ -1,10 +1,15 @@
-from src.artnet_reciver import ArtNetReciver
+import json
+from src.artnet.artnet_reciver import ArtNetReciver
 from src.merge_and_send import MergeAndSend
 import argparse
 from src.settings import Settings, MergeSettings,MergeMethod,UniverseRange
 import queue
 from zeroconf import ServiceBrowser, Zeroconf
 import threading
+
+from src.artnet.artnet_sender import ArtNetSender
+from src.artnet.artnet_data_class import OpCode
+import time
 
 from src.mdns_listener import MdnsListener
 
@@ -22,7 +27,7 @@ def start_mdns_listener() -> MdnsListener:
 
     return listener
 
-import json
+
 if __name__ == "__main__":
 
     # settings 
@@ -48,4 +53,9 @@ if __name__ == "__main__":
     recv_thread = threading.Thread(target=start_artnet_reciver,args=(incomming_data_queue,),daemon=True)
     recv_thread.start()
     
-    merge_and_send.start_merge_universes(incomming_data_queue)
+    #merge_and_send.start_merge_universes(incomming_data_queue)
+
+    sender = ArtNetSender(broadcast=True,op_code=OpCode.OpPoll, ip_address="<broadcast>")
+    while True:
+        time.sleep(1)
+        sender.send_poll()

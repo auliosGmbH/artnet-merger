@@ -65,8 +65,6 @@ class RecivedArtNetData:
             self.flags = self.header[12]
             self.priority = self.header[13]
 
-            
-
         if self.op_code_name == OpCode.OpDmx:
 
             self.prot_ver_hi : int = self.header[10]
