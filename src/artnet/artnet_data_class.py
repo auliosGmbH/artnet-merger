@@ -57,25 +57,67 @@ class RecivedArtNetData:
 
         self.header : bytes = raw_data[0:18]
 
-        self.op_code = (self.header[9] << 8) | self.header[8]
+        self.op_code = (self.raw_data[9] << 8) | self.raw_data[8]
         self.op_code_name = OpCode(self.op_code)
+
+        if self.op_code_name == OpCode.OpPollReply:
+            self.ip : str = str(self.raw_data[10]) + "." + str(self.raw_data[11]) + "." + str(self.raw_data[12]) + "." + str(self.raw_data[13])
+            self.port : int = (self.raw_data[15] << 8) | self.raw_data[14]
+
+            self.ver_hi : int = self.raw_data[16]
+            self.ver_lo : int = self.raw_data[17]
+
+            self.net_switch : int = self.raw_data[18]
+            self.sub_switch : int = self.raw_data[19]
+
+            self.oem_hi : int = self.raw_data[20]
+            self.oem_lo : int = self.raw_data[21]
+
+            self.ubea_version : int = self.raw_data[22]
+
+            self.status1 : int = self.raw_data[23]
+
+            self.esta_man_lo : int = self.raw_data[24]
+            self.esta_man_hi : int = self.raw_data[25]
+
+            self.short_name : str = self.raw_data[26:44].decode("utf-8") # 18 bytes
+
+            self.long_name : str = self.raw_data[44:108].decode("utf-8") # 64 bytes
+
+            self.node_report : str = self.raw_data[108:172].decode("utf-8") # 64 bytes
+
+            self.num_ports_hi : int = self.raw_data[172]
+            self.num_ports_lo : int = self.raw_data[173]
+
+            self.port_types : list = self.raw_data[174:178] # 4 bytes
+
+            self.good_input : list = self.raw_data[178:182] # 4 bytes
+            self.good_output : list = self.raw_data[182:186] # 4 bytes
+
+            self.swin : list = self.raw_data[186:190] # 4 bytes
+            self.swout : list = self.raw_data[190:194] # 4 bytes
+
+            self.style : int = self.raw_data[200]
+            self.mac : str = self.raw_data[201:207]
+
+            self.status2 = self.raw_data[212]
 
 
         if self.op_code_name == OpCode.OpPoll:
-            self.flags = self.header[12]
-            self.priority = self.header[13]
+            self.flags = self.raw_data[12]
+            self.priority = self.raw_data[13]
 
         if self.op_code_name == OpCode.OpDmx:
 
-            self.prot_ver_hi : int = self.header[10]
-            self.prot_ver_lo : int = self.header[11]
+            self.prot_ver_hi : int = self.raw_data[10]
+            self.prot_ver_lo : int = self.raw_data[11]
 
             self.sequence : int = raw_data[12]
 
             self.universe : int = int.from_bytes(raw_data[14:15], "big") 
             self.physical : int = raw_data[13]
 
-            self.length: int = (self.header[16] << 8) | self.header[17]
+            self.length: int = (self.raw_data[16] << 8) | self.raw_data[17]
 
             self.data : bytes =  raw_data[18:]
         self.time = time.perf_counter()

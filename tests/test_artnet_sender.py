@@ -1,6 +1,7 @@
 import random
 import numpy as np
 from src.artnet.artnet_sender import ArtNetSender
+from src.artnet.artnet_data_class import OpCode 
 
 
 class MockSocket:
@@ -13,7 +14,7 @@ class MockSocket:
 
 def create_ArtNetSender():
     my_mock_socket = MockSocket()
-    my_artnet_sender = ArtNetSender("127.0.0.1", 6454, 0, False,my_mock_socket)
+    my_artnet_sender = ArtNetSender("127.0.0.1", 6454, 0, False,my_mock_socket,op_code=OpCode.OpDmx)
     return [my_artnet_sender, my_mock_socket]
 
 
@@ -25,6 +26,7 @@ def test_init_header():
 
     for item in array_header:
         header.append(item)
+
     assert my_artnet_sender.header == header
 
 
