@@ -43,7 +43,7 @@ class ArtNetReciver:
         while True:
             data, addr = self.recv_socket.recvfrom(2048)
 
-            if addr[0] == self.__ip:
+            if addr[0] == self.ip_address:
                 continue
 
             artnet_data  = RecivedArtNetData(data,addr)
