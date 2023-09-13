@@ -43,10 +43,11 @@ class ArtNetReciver:
         while True:
             data, addr = self.recv_socket.recvfrom(2048)
 
-            if addr[0] == self.ip_address:
+            artnet_data  = RecivedArtNetData(data,addr)
+
+            if addr[0] == self.ip_address and artnet_data.op_code_name is OpCode.OpPoll or artnet_data.op_code_name is OpCode.OpPollReply:
                 continue
 
-            artnet_data  = RecivedArtNetData(data,addr)
             try:
                 if artnet_data.op_code_name is OpCode.OpDmx:
                     artnet_queue.put(artnet_data)
