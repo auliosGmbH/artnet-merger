@@ -2,6 +2,7 @@ import socket
 import numpy as np
 import time
 from src.artnet.artnet_data_class import RecivedArtNetData, OpCode
+from src.artnet.artnet_sender import ArtNetSender
 import queue
 
 class ArtNetReciver:
@@ -41,19 +42,25 @@ class ArtNetReciver:
 
         while True:
             data, addr = self.recv_socket.recvfrom(2048)
+
+            if addr[0] == self.__ip:
+                continue
+
             artnet_data  = RecivedArtNetData(data,addr)
             try:
                 if artnet_data.op_code_name is OpCode.OpDmx:
                     artnet_queue.put(artnet_data)
-                elif artnet_data.op_code_name is  OpCode.OpPoll:
-                    #TODO -> send reply
-                    # print("Recived Poll")
-                    pass
-                elif artnet_data.op_code_name is OpCode.OpPollReply:
+                elif artnet_data.op_code_name == OpCode.OpPoll:
+
+                    sender = ArtNetSender(addr[0],port=addr[1],broadcast=False,op_code=OpCode.OpPollReply)
+                    sender.send_poll_reply()
+                    print("Recived Poll")
+                elif artnet_data.op_code_name == OpCode.OpPollReply:
                     #TODO -> use reply
-                    # print("Recived PollReply")
-                    pass
+                    print("Recived PollReply")
+                    print(artnet_data.__dict__)
                 else:
+                    #TODO -> handle OpCode.OpTodRequest aka RDM
                     print(artnet_data.op_code_name)
             except:
                 print("Error while parsing artnet data")

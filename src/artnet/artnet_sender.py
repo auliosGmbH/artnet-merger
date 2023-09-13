@@ -7,6 +7,8 @@ import numpy as np
 from src.clock import Clock
 from src.artnet.artnet_data_class import OpCode
 
+import struct
+from struct import pack_into
 ARTNET_FPS = 44
 
 ARTNET_STRING = b'Art-Net\x00'
@@ -38,7 +40,6 @@ class ArtNetSender():
         self.__header = bytearray()
         self.__init_header(universe_id)
 
-
         if fps > 0:        
             self.__clock = Clock(fps)
         else:
@@ -46,6 +47,12 @@ class ArtNetSender():
 
         self.__last_packet= None
         self.__header_sequence = 0
+
+    def __get_local_ip(self) -> str:
+        try:
+            return socket.gethostbyname(socket.gethostname())
+        except:
+            return socket.gethostbyname("")
 
     @property
     def header(self) -> bytearray:
@@ -66,35 +73,58 @@ class ArtNetSender():
     def __str__(self):
         return f"ArtNetSender(ip_address={self.__ip_address}, port={self.__port}, broadcast={self.__broadcast})"
 
-    def __init_header(self, universe_id: int):
-        self.__header.extend(ARTNET_STRING)
+    def __add_default_header(self, data: bytearray) -> bytearray:
 
-        self.__header.append(self.op_code.value & 0xff)  # low byte of opcode
-        self.__header.append(self.op_code.value >> 8)  # high byte of opcode
+        pack_into("8s", data, 0,ARTNET_STRING)
+        pack_into("H", data, 8,self.op_code.value)
+        return data
+
+    def __init_header(self, universe_id: int=None):
+
+        if self.op_code == OpCode.OpPollReply:
+            packet = bytearray(239)
+            self.__add_default_header(packet)
+
+            ip_address = self.__get_local_ip()
+            ip_bytes = bytes(map(int, ip_address.split('.')))
+
+            pack_into("4s", packet, 10,ip_bytes)
+
+            pack_into("B", packet, 23,0b00000000) # status 1
+
+
+            short_name = "Alex - test" # max 18
+            short_name = short_name.encode("utf-8")
+            short_name = short_name + b"\x00" * (18 - len(short_name))
+            pack_into("18s", packet, 26,short_name)
+
+            long_name = "Alex - Merge Artnet Data" # max 64
+            long_name = long_name.encode("utf-8")
+            long_name = long_name + b"\x00" * (64 - len(long_name))
+            pack_into("64s", packet, 44,long_name)
+
+
+            self.__header.extend(packet)
 
         if self.op_code == OpCode.OpDmx:
-            self.__header.extend([0x00, 0x50])
-            self.__header.extend([0x0, 0x00, 0x50, 0x0, 14, 0, 0x00])
+            packet = bytearray(10)
+            self.__add_default_header(packet)
+
+            self.header.extend(packet)
+
+            self.__header.extend([ 0x0, 14, 0, 0x00])
             self.__header.extend(self.__extract_mbs_and_lsb(universe_id)[::-1])
-            self.__header.extend(self.__extract_mbs_and_lsb(512))       
+            self.__header.extend(self.__extract_mbs_and_lsb(512))
 
 
         if self.op_code == OpCode.OpPoll:
+            packet = bytearray(10)
+            self.__add_default_header(packet)
+            self.header.extend(packet)
+
             self.__header.extend(self.__get_version())
             flags = 0b00000010
             self.__header.extend([flags, 0x0])
-
-
-    def bitsToBytes(self,a):
-        s = i = 0
-        for x in a:
-            s += s + x
-            i += 1
-            if i == 8:
-                yield s
-                s = i = 0
-        if i > 0:
-            yield s << (8 - i)
                  
     def __get_version(self):
         return [0x0, 14]
@@ -141,3 +171,8 @@ class ArtNetSender():
 
         self.__socket.sendto(self.__header, (self.ip_address, self.__port))
         print("sent poll")
+
+    def send_poll_reply(self):
+        self.__socket.sendto(self.__header, (self.ip_address, self.__port))
+        print("sent poll reply ")
+
