@@ -7,10 +7,15 @@ import queue
 class ArtNetReciver:
     def __init__(self, port: int = 6454,ip_address: str = None):
 
+        if ip_address != None:
+            self.ip_address = ip_address
+        else:
+            self.ip_address = self.get_local_ip()
         self.__port = port
         self.recv_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.__bind_socket_to_local_ip()
-        print("ArtNetReciver started on: ", self.get_local_ip(), ":", self.__port)
+
+        print("ArtNetReciver started on: ", self.ip_address, ":", self.__port)
 
     def get_local_ip(self) -> str:
         try:
@@ -22,36 +27,35 @@ class ArtNetReciver:
         return socket.gethostname()
 
     def __bind_socket_to_local_ip(self):
+      
         try:
-            self.recv_socket.bind((self.get_local_ip(), self.__port))
+            self.recv_socket.bind((self.ip_address, self.__port))
         except OSError:
             print("Port is already in use")
             self.recv_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            self.recv_socket.bind((self.get_local_ip(), self.__port))
+            self.recv_socket.bind((self.ip_address, self.__port))
+        
 
 
     def start_recive(self,artnet_queue: queue.Queue):
 
         while True:
             data, addr = self.recv_socket.recvfrom(2048)
-            print(data)
-
             artnet_data  = RecivedArtNetData(data,addr)
             try:
-                if artnet_data.op_code_name == OpCode.OpDmx:
+                if artnet_data.op_code_name is OpCode.OpDmx:
                     artnet_queue.put(artnet_data)
-                    print("Recived Dmx")
-                if artnet_data.op_code_name == OpCode.OpPoll:
+                elif artnet_data.op_code_name is  OpCode.OpPoll:
                     #TODO -> send reply
-                    print("Recived Poll")
-                if artnet_data.op_code_name == OpCode.OpPollReply:
+                    # print("Recived Poll")
+                    pass
+                elif artnet_data.op_code_name is OpCode.OpPollReply:
                     #TODO -> use reply
-                    print("Recived PollReply")
+                    # print("Recived PollReply")
+                    pass
                 else:
                     print(artnet_data.op_code_name)
-                
             except:
-                #print(data)
                 print("Error while parsing artnet data")
                 pass
 
